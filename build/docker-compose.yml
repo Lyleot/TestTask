@@ -1,0 +1,35 @@
+version: "2.1"
+
+services:
+  db-postgres:
+    # In production, you may want to use a managed database service
+    image: 'postgres:12.1-alpine'
+    container_name: task-postgres
+    environment:
+      - POSTGRES_DB=ms_dev
+      - POSTGRES_USER=trent
+      - POSTGRES_PASSWORD=QWSA4243
+    ports:
+      - "5432:5432"
+  task:
+    container_name: task
+    working_dir: /app
+    build:
+      context: ../
+      dockerfile: ./build/Dockerfile
+    command: sh -c "./TestTask -migrate up && ./TestTask"
+    ports:
+      - '8080:80'
+    environment:
+      - PG_HOST=db-postgres
+      - PG_PORT=5432
+      - PG_USER=trent
+      - PG_PASSWORD=QWSA4243
+      - PG_DB_NAME=ms_dev
+      - PG_SSL=disable
+    depends_on:
+      - db-postgres
+    restart: always
+
+volumes:
+  db-data: {}
