@@ -29,37 +29,43 @@ type updateUserRequest struct {
 // @Failure 500 {object} ErrorResponse "Internal Server Error"
 // @Router /user/{id} [patch]
 func (h handler) updateUser(c *gin.Context) {
+	// Получаем ID пользователя из параметров запроса.
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid user ID"})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid user ID"}) // Некорректный ID пользователя
 		return
 	}
 
+	// Ищем пользователя в базе данных.
 	var user *models.User
 	user, err = h.DB.User().Find(id)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err) // Ошибка при поиске пользователя
 		return
 	}
 
+	// Привязываем данные из запроса к структуре.
 	req := updateUserRequest{}
-
 	if err = c.BindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		c.AbortWithError(http.StatusBadRequest, err) // Некорректные данные запроса
 		return
 	}
 
+	// Обновляем поля пользователя.
 	updateUserFields(user, req)
 
+	// Сохраняем обновленного пользователя в базе данных.
 	if err = h.DB.User().Save(user); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err) // Ошибка при сохранении пользователя
 		return
 	}
 
+	// Возвращаем статус 200 OK.
 	c.Status(http.StatusOK)
 }
 
+// updateUserFields обновляет поля пользователя в зависимости от данных запроса.
 func updateUserFields(user *models.User, params updateUserRequest) {
 	if params.Login != nil {
 		user.Login = ptr.DeRef(params.Login)

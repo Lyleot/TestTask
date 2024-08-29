@@ -2,34 +2,35 @@ version: "2.1"
 
 services:
   db-postgres:
-    # In production, you may want to use a managed database service
-    image: 'postgres:12.1-alpine'
-    container_name: task-postgres
+    # Используется образ Postgres для базы данных.
+    image: 'postgres:12.1-alpine'  # Образ Postgres на базе Alpine
+    container_name: task-postgres   # Имя контейнера
     environment:
-      - POSTGRES_DB=ms_dev
-      - POSTGRES_USER=trent
-      - POSTGRES_PASSWORD=QWSA4243
+      - POSTGRES_DB=ms_dev          # Имя базы данных
+      - POSTGRES_USER=trent          # Имя пользователя базы данных
+      - POSTGRES_PASSWORD=QWSA4243   # Пароль пользователя базы данных
     ports:
-      - "5432:5432"
+      - "5432:5432"                 # Проброс порта для доступа к базе данных
+
   task:
-    container_name: task
-    working_dir: /app
+    container_name: task            # Имя контейнера приложения
+    working_dir: /app               # Рабочая директория внутри контейнера
     build:
-      context: ../
-      dockerfile: ./build/Dockerfile
-    command: sh -c "./TestTask -migrate up && ./TestTask"
+      context: ../                  # Контекст сборки Docker образа
+      dockerfile: ./build/Dockerfile # Путь к Dockerfile
+    command: sh -c "./TestTask -migrate up && ./TestTask" # Команда для запуска приложения и выполнения миграций
     ports:
-      - '8080:80'
+      - '80:80'                     # Проброс порта для веб-приложения
     environment:
-      - PG_HOST=db-postgres
-      - PG_PORT=5432
-      - PG_USER=trent
-      - PG_PASSWORD=QWSA4243
-      - PG_DB_NAME=ms_dev
-      - PG_SSL=disable
+      - PG_HOST=db-postgres          # Хост базы данных
+      - PG_PORT=5432                 # Порт базы данных
+      - PG_USER=trent                # Имя пользователя базы данных
+      - PG_PASSWORD=QWSA4243         # Пароль пользователя базы данных
+      - PG_DB_NAME=ms_dev            # Имя базы данных
+      - PG_SSL=disable               # Отключение SSL
     depends_on:
-      - db-postgres
-    restart: always
+      - db-postgres                  # Зависимость от сервиса базы данных
+    restart: always                  # Автоматический перезапуск контейнера в случае сбоя
 
 volumes:
-  db-data: {}
+  db-data: {}                       # Объявление тома для хранения данных базы данных

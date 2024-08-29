@@ -29,13 +29,15 @@ type GetRoleResponse struct {
 // @Failure 404 {object} ErrorResponse "Not Found"
 // @Router /role/{id} [get]
 func (h handler) getRole(c *gin.Context) {
+	// Получаем ID роли из параметра запроса.
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid role ID"})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid role ID"}) // Ошибка — 400 Bad Request.
 		return
 	}
 
+	// Находим роль в базе данных; ошибка — 404 Not Found.
 	var role *models.Role
 	role, err = h.DB.Role().Find(id)
 	if err != nil {
@@ -43,9 +45,11 @@ func (h handler) getRole(c *gin.Context) {
 		return
 	}
 
+	// Отправляем роль в ответе; статус — 200 OK.
 	c.JSON(http.StatusOK, buildGetRoleResponse(role))
 }
 
+// buildGetRoleResponse формирует ответ для получения роли.
 func buildGetRoleResponse(role *models.Role) (result GetRoleResponse) {
 	result = GetRoleResponse{
 		ID:          role.ID,

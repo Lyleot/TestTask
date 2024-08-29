@@ -31,13 +31,15 @@ type GetUserResponse struct {
 // @Failure 404 {object} ErrorResponse "Not Found"
 // @Router /user/{id} [get]
 func (h handler) getUser(c *gin.Context) {
+	// Получаем ID пользователя из параметра запроса.
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid user ID"})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid user ID"}) // Ошибка — 400 Bad Request.
 		return
 	}
 
+	// Находим пользователя в базе данных; ошибка — 404 Not Found.
 	var user *models.User
 	user, err = h.DB.User().Find(id)
 	if err != nil {
@@ -45,9 +47,11 @@ func (h handler) getUser(c *gin.Context) {
 		return
 	}
 
+	// Отправляем пользователя в ответе; статус — 200 OK.
 	c.JSON(http.StatusOK, buildGetUserResponse(user))
 }
 
+// buildGetUserResponse формирует ответ для получения пользователя.
 func buildGetUserResponse(user *models.User) (result GetUserResponse) {
 	result = GetUserResponse{
 		ID:         user.ID,

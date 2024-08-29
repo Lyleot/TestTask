@@ -24,13 +24,16 @@ type createRoleRequest struct {
 // @Failure 500 {object} ErrorResponse "Internal Server Error"
 // @Router /role [post]
 func (h handler) createRole(c *gin.Context) {
+	// Инициализируем запрос.
 	req := createRoleRequest{}
 
+	// Привязываем JSON к запросу; ошибка — 400 Bad Request.
 	if err := c.BindJSON(&req); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
+	// Создаём роль в базе данных; ошибка — 404 Not Found.
 	if err := h.DB.Role().Create(&models.Role{
 		Name:        req.Name,
 		Description: req.Description,
@@ -39,5 +42,6 @@ func (h handler) createRole(c *gin.Context) {
 		return
 	}
 
+	// Успешное создание — 201 Created.
 	c.Status(http.StatusCreated)
 }

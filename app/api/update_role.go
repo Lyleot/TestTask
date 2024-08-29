@@ -27,37 +27,43 @@ type updateRoleRequest struct {
 // @Failure 500 {object} ErrorResponse "Internal Server Error"
 // @Router /role/{id} [patch]
 func (h handler) updateRole(c *gin.Context) {
+	// Получаем ID роли из параметров запроса.
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid role ID"})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid role ID"}) // Некорректный ID роли
 		return
 	}
 
+	// Ищем роль в базе данных.
 	var role *models.Role
 	role, err = h.DB.Role().Find(id)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err) // Ошибка при поиске роли
 		return
 	}
 
+	// Привязываем данные из запроса к структуре.
 	req := updateRoleRequest{}
-
 	if err = c.BindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		c.AbortWithError(http.StatusBadRequest, err) // Некорректные данные запроса
 		return
 	}
 
+	// Обновляем поля роли.
 	updateRoleFields(role, req)
 
+	// Сохраняем обновленную роль в базе данных.
 	if err = h.DB.Role().Save(role); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err) // Ошибка при сохранении роли
 		return
 	}
 
+	// Возвращаем статус 200 OK.
 	c.Status(http.StatusOK)
 }
 
+// updateRoleFields обновляет поля роли в зависимости от данных запроса.
 func updateRoleFields(role *models.Role, params updateRoleRequest) {
 	if params.Name != nil {
 		role.Name = ptr.DeRef(params.Name)

@@ -26,13 +26,16 @@ type createUserRequest struct {
 // @Failure 404 {object} ErrorResponse "Not Found"
 // @Router /user [post]
 func (h handler) createUser(c *gin.Context) {
+	// Инициализируем запрос.
 	req := createUserRequest{}
 
+	// Привязываем JSON к запросу; ошибка — 400 Bad Request.
 	if err := c.BindJSON(&req); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
+	// Создаём пользователя в базе данных; ошибка — 404 Not Found.
 	if err := h.DB.User().Create(&models.User{
 		Login:      req.Login,
 		FirstName:  req.FirstName,
@@ -43,5 +46,6 @@ func (h handler) createUser(c *gin.Context) {
 		return
 	}
 
+	// Успешное создание — 201 Created.
 	c.Status(http.StatusCreated)
 }

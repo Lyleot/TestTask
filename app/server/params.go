@@ -11,28 +11,31 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 )
 
-const MigrationsDir = "migrations"
+const MigrationsDir = "migrations" // Директория для миграций
 
+// ParseParams обрабатывает флаги командной строки для выполнения миграций.
 func ParseParams(config conf.Config) {
 
 	var (
 		migrateCmd string
 	)
 
-	flag.StringVar(&migrateCmd, "migrate", "", "up - migrate all steps Up\n"+
-		"down - migrate all steps Down\n"+
-		"number - amount of steps to migrate (if > 0 - migrate number steps up, if < 0 migrate number steps down)\n"+
-		"status - show list of applyed migrations\n",
+	// Определение флага командной строки для миграций
+	flag.StringVar(&migrateCmd, "migrate", "", "up - выполнить все миграции Up\n"+
+		"down - выполнить все миграции Down\n"+
+		"number - количество шагов для миграции (если > 0 - выполнить number шагов Up, если < 0 - выполнить number шагов Down)\n"+
+		"status - показать список применённых миграций\n",
 	)
 
 	flag.Parse()
 
 	if len(migrateCmd) > 0 {
-		ExecMigrate(config, migrateCmd)
+		ExecMigrate(config, migrateCmd) // Выполнение миграции в зависимости от команды
 	}
 
 }
 
+// ExecMigrate выполняет миграции в зависимости от указанной команды.
 func ExecMigrate(config conf.Config, migrateCmd string) {
 
 	var steps int
@@ -41,6 +44,7 @@ func ExecMigrate(config conf.Config, migrateCmd string) {
 
 	switch migrateCmd {
 	case "status":
+		// Получение и вывод статуса миграций
 		recs, err := migrate.GetMigrationRecords(config.DB().SqlDB(), "postgres")
 		if err != nil {
 			log.WithError(err).Fatal("failed to get migration records")
@@ -50,22 +54,22 @@ func ExecMigrate(config conf.Config, migrateCmd string) {
 		}
 		os.Exit(0)
 	case "up":
-		steps = 999
+		steps = 999 // Выполнить все миграции Up
 	case "down":
-		steps = -999
+		steps = -999 // Выполнить все миграции Down
 	default:
-		if regexp.MustCompile(`^-?[0-9]+$`).Match([]byte(migrateCmd)) { // check if parameter is Integer
+		if regexp.MustCompile(`^-?[0-9]+$`).Match([]byte(migrateCmd)) { // Проверка, что параметр - это целое число
 			var err error
 			steps, err = strconv.Atoi(migrateCmd)
 			if err != nil {
 				log.WithError(err).Fatal("failed to convert migrate argument to digit")
 			}
 		} else {
-			log.Fatal("unknown command")
+			log.Fatal("unknown command") // Неизвестная команда
 		}
 	}
 
-	// Migrator
+	// Выполнение миграций
 	if steps != 0 {
 
 		migrations := &migrate.FileMigrationSource{
@@ -75,9 +79,9 @@ func ExecMigrate(config conf.Config, migrateCmd string) {
 		var direction migrate.MigrationDirection
 
 		if steps > 0 {
-			direction = migrate.Up
+			direction = migrate.Up // Направление миграций Up
 		} else if steps < 0 {
-			direction = migrate.Down
+			direction = migrate.Down // Направление миграций Down
 			steps = -steps
 		}
 
@@ -90,7 +94,7 @@ func ExecMigrate(config conf.Config, migrateCmd string) {
 			n = -n
 		}
 
-		log.Infof("%d steps done", n)
+		log.Infof("%d steps done", n) // Логирование количества выполненных шагов
 
 		os.Exit(0)
 	}

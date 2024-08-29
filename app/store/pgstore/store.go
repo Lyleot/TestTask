@@ -7,22 +7,21 @@ import (
 )
 
 type Store struct {
-	db IDB
+	db IDB // Интерфейс для работы с базой данных
 
-	healthcheckRepository *HealthcheckRepository
-
-	roleRepository *RoleRepository
-	userRepository *UserRepository
+	healthcheckRepository *HealthcheckRepository // Репозиторий для проверки состояния
+	roleRepository        *RoleRepository        // Репозиторий для ролей
+	userRepository        *UserRepository        // Репозиторий для пользователей
 }
 
-// New ...
+// New создает новый экземпляр Store с переданной базой данных
 func New(db *sqlx.DB) *Store {
 	return &Store{
 		db: db,
 	}
 }
 
-// Healthcheck ...
+// Healthcheck возвращает репозиторий проверки состояния, создавая его при необходимости
 func (s *Store) Healthcheck() store.HealthcheckRepository {
 	if s.healthcheckRepository != nil {
 		return s.healthcheckRepository
@@ -35,7 +34,7 @@ func (s *Store) Healthcheck() store.HealthcheckRepository {
 	return s.healthcheckRepository
 }
 
-// Role ...
+// Role возвращает репозиторий ролей, создавая его при необходимости
 func (s *Store) Role() store.RoleRepository {
 	if s.roleRepository != nil {
 		return s.roleRepository
@@ -48,7 +47,7 @@ func (s *Store) Role() store.RoleRepository {
 	return s.roleRepository
 }
 
-// User ...
+// User возвращает репозиторий пользователей, создавая его при необходимости
 func (s *Store) User() store.UserRepository {
 	if s.userRepository != nil {
 		return s.userRepository
